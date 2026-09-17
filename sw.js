@@ -8,7 +8,7 @@
    requests, making the site feel native on repeat visits.
    Bump CACHE_VERSION whenever you deploy changes.
    ============================================================ */
-const CACHE_VERSION = "hmg-classdeck-v12.1.0-generator-fix";   /* bumped: V12.1 — generator template resolution + brand cascade fix */
+const CACHE_VERSION = "hmg-classdeck-v12.2.0-audit-hardening";   /* bumped: V12.2 security + reliability audit */
 
 const SHELL = [
   "./",

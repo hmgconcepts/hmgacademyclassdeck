@@ -60,7 +60,7 @@ The GitHub `main` branch has **no `js/config.js`** (404) — i.e. the fixes I ma
 | C-3 | Live → End not working | ✅ Root cause = auth gate + stale deployment. Fixed with owner account + verified Go Live/End in browser-engine test |
 | C-4 | Rec not working | ✅ Root cause = broken HTML comment hiding the modal + strict-mode dead hooks. Fixed + verified |
 | C-5 | Top-bar icons dead (gear, calc, focus, book, cup, PiP…) | ✅ Root cause = broken HTML comment swallowing modals. Fixed + all 21 functional checks pass |
-| C-6 | HMG deck never expires; default login buildingmyictcareer@gmail.com / Walex@28120215; settable in GitHub repo | ✅ `window.HMG_OWNER` in `js/config.js` (committed to repo); owner flag = lifetime, bypasses trial/license/revocation; **fixed ordering bug so founder can sign in on any device** |
+| C-6 | HMG deck never expires; login = the owner email/password configured in js/config.js → HMG_OWNER; settable in GitHub repo | ✅ `window.HMG_OWNER` in `js/config.js` (committed to repo); owner flag = lifetime, bypasses trial/license/revocation; **fixed ordering bug so founder can sign in on any device** |
 | C-7 | Generator sets client subscription (one-time / monthly/quarterly/yearly) | ✅ Billing step in wizard; `js/license.js` enforces (reminder → grace → lock) |
 | C-8 | More enterprise features | ✅ See FEATURES.md |
 | C-9 | Video intro (brand, logo, motto, tutor, subject, topic…) | ✅ Now genuinely painted (verified) |
@@ -109,6 +109,6 @@ The GitHub `main` branch has **no `js/config.js`** (404) — i.e. the fixes I ma
 2. Replace **all** contents of `HMG-ACADEMY-CLASSDECK/` with your current repo files (delete old files first — stale files like the Turn-2 `teach.html` are what keeps the bugs alive).
 3. Commit & push to GitHub (`js/config.js` included).
 4. Redeploy on Vercel (or Netlify/Cloudflare) — output dir `./`.
-5. Open `teach.html` → sign in with `buildingmyictcareer@gmail.com` / `Walex@28120215` → every control works.
+5. Open `teach.html` → sign in with the owner email/password from `js/config.js` → `HMG_OWNER` → every control works.
 
 See `DEPLOYMENT-GUIDE.md` for the complete, unambiguous steps.

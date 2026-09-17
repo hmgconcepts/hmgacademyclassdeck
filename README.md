@@ -1,5 +1,7 @@
 # HMG ACADEMY CLASS DECK — ClassDesk v3 (v11.1.1) 🧑‍🏫📡🛡
 
+> 🛡 **V12.2 (17 Sep 2026):** full-system security + reliability audit — see [docs/AUDIT-REPORT-V12.2.md](docs/AUDIT-REPORT-V12.2.md). **Action:** change the owner password in `js/config.js` before publishing this repo.
+
 **ClassDesk v3** builds on the existing HMG ACADEMY CLASS DECK without removing previous features or changing the UI/layout philosophy. It adds stronger subscription/security protection, optional Cloudflare Worker license gateway, forensic watermarking, secure invite links, security audit export, and Picture-in-Picture continuity — while keeping the direct tablet screen/workspace broadcast and no-OBS tablet social live relay workflow from ClassDesk v2.
 
 **By Adewale Samson Adeagbo** — AI-Augmented Solutions Developer · Data Scientist · STEM Educator (Lagos, Nigeria).

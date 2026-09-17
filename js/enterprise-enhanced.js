@@ -44,7 +44,13 @@ window.drawHMGWatermark = function(ctx, W, H) {
   try { ctx.save(); ctx.globalAlpha = .075; ctx.fillStyle = "#fff";
     ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.translate(W/2, H/2); ctx.rotate(-Math.PI/6);
-    var t = "HMG ACADEMY CLASS DECK * buildingmyictcareer@gmail.com * " + new Date().getFullYear();
+    /* V12.2 FIX: watermark identity comes from config, never hardcoded.
+       Client decks must stamp THEIR brand/owner, not the HMG founder email. */
+    var wmBrand = (window.CLASSDECK && CLASSDECK.BRAND && CLASSDECK.BRAND.productName) ||
+                  (window.HMG_BRAND && HMG_BRAND.name) || "CLASS DECK";
+    var wmOwner = (window.HMG_OWNER && HMG_OWNER.email) ||
+                  (window.CLASSDECK && CLASSDECK.BRAND && CLASSDECK.BRAND.email) || "";
+    var t = wmBrand + (wmOwner ? " * " + wmOwner : "") + " * " + new Date().getFullYear();
     for(var y = -600; y < 600; y += 130) { ctx.fillText(t, 0, y, W*1.6); }
     ctx.restore(); } catch(e) {}
 };

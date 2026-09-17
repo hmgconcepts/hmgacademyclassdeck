@@ -140,7 +140,7 @@ Companion mode hides live-class controls, shows a green platform badge, keeps th
 ## F. ACCOUNTS, LICENSING & SECURITY
 
 ### F1. HMG Owner account (never expires)
-`js/config.js` → `window.HMG_OWNER` (default email `buildingmyictcareer@gmail.com`, password `Walex@28120215`, editable in the repo). Signed-up owner accounts are flagged `owner:true` → **lifetime access**, bypassing trial, license, revocation, and device-binding (founder can sign in anywhere). Non-owner teachers get a 3-day trial then license keys (`admin.html` → HMG-YYYYMM-XXXXXXXXXX).
+`js/config.js` → `window.HMG_OWNER` (email and password configured in `js/config.js` → `HMG_OWNER`, editable in the repo). Signed-up owner accounts are flagged `owner:true` → **lifetime access**, bypassing trial, license, revocation, and device-binding (founder can sign in anywhere). Non-owner teachers get a 3-day trial then license keys (`admin.html` → HMG-YYYYMM-XXXXXXXXXX).
 
 ### F2. Client subscription billing (generator)
 The ClassDeck Generator sets each client's billing model: **one-time (lifetime)** or **Monthly/Quarterly/Yearly subscription** with expiry, grace days, renewal link, contact, lock message. Generated decks ship `js/license.js` that shows a 30-day renewal reminder, then a grace banner, then a lock screen until renewal. 100% browser-based.

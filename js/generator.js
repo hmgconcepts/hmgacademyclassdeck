@@ -123,7 +123,7 @@ const CDGenerator = {
     /* ---------- ASSETS ---------- */
     const assetFiles = [
       'assets/icon-96.png', 'assets/icon-192.png', 'assets/icon-512.png',
-      'assets/apple-touch-icon.png', 'assets/hmg-academy-logo.png',
+      'assets/apple-touch-icon.png', 'assets/icon-master.png', 'assets/hmg-academy-logo.png',
       'assets/founder-photo.jpg'
     ];
     const assetBin = {};
@@ -146,11 +146,25 @@ const CDGenerator = {
     for (const [path, bin] of Object.entries(assetBin)) {
       zip.file(deckFolder + '/' + path, bin, { binary: true });
     }
-    /* Brand logo + favicon */
-    if (logoData && /^data:image\//.test(logoData) && logoExt !== 'svg') {
-      zip.file(deckFolder + '/assets/brand-logo.' + logoExt, logoData.split(',')[1] || '', { base64: true });
+    /* Brand logo + favicon.
+       V12.2 FIX: pages reference assets/brand-logo.<logoExt> (the _brand()
+       replacement), but the generated monogram was written to
+       brand-logo.png — with SVG markup inside a .png name. Default builds
+       (logoExt 'svg') therefore shipped a BROKEN logo on every page.
+       Now: an uploaded raster/svg logo is written to its true extension,
+       and the SVG monogram fallback is written to brand-logo.svg. */
+    /* Guaranteed-present fallback first, so a real upload can overwrite it. */
+    zip.file(deckFolder + '/assets/brand-logo.svg', CDGenerator._logoSVG(cfg));
+    if (logoData && /^data:image\//.test(logoData)) {
+      const b64 = logoData.split(',')[1] || '';
+      if (logoExt === 'svg') {
+        zip.file(deckFolder + '/assets/brand-logo.svg',
+          /;base64,/.test(logoData) ? b64 : decodeURIComponent(b64),
+          /;base64,/.test(logoData) ? { base64: true } : {});
+      } else {
+        zip.file(deckFolder + '/assets/brand-logo.' + logoExt, b64, { base64: true });
+      }
     }
-    zip.file(deckFolder + '/assets/brand-logo.png', CDGenerator._logoSVG(cfg));
     zip.file(deckFolder + '/assets/favicon.svg', CDGenerator._faviconSVG(cfg));
     /* Branded config + license engine */
     zip.file(deckFolder + '/js/config.js', CDGenerator._configJS(cfg));
@@ -188,7 +202,7 @@ const CDGenerator = {
     for (const af of assetFiles) {
       if (assetBin[af]) zip.file(genFolder + '/' + af, assetBin[af], { binary: true });
     }
-    zip.file(genFolder + '/assets/brand-logo.png', CDGenerator._logoSVG(cfg));
+    zip.file(genFolder + '/assets/brand-logo.svg', CDGenerator._logoSVG(cfg));
     /* Generator docs */
     zip.file(genFolder + '/README.md', CDGenerator._genReadme(cfg));
     zip.file(genFolder + '/DEPLOYMENT-GUIDE.md', CDGenerator._deployGuide(cfg));
@@ -355,6 +369,16 @@ Built by HMG Concepts · ${cfg.hmgLink}
      ------------------------------------------------------------ */
   _brand(path, content, cfg) {
     let html = content;
+    /* V12.2 FIX: the client deck ships WITHOUT the builder page at its root
+       (the generator lives in the CLASSDECK-GENERATOR folder of the ZIP).
+       Its service worker must not precache builder-only files, or every
+       install logs failed fetches for files that don't exist. */
+    if (path === 'sw.js') {
+      html = html.split('\n').filter(function (line) {
+        return line.indexOf('"./generate.html"') === -1 &&
+               line.indexOf('"./js/generator.js"') === -1;
+      }).join('\n');
+    }
     /* V12.1 CASCADE FIX ------------------------------------------------
        CONFIRMED BUG: replacements ran sequentially on live text, so a
        client value containing a LATER search token was re-processed.
@@ -394,7 +418,16 @@ Built by HMG Concepts · ${cfg.hmgLink}
   },
 
   _brandGenFiles(name, content, cfg) {
-    /* The generator folder keeps the HMG identity (it's HMG's internal tool). */
+    /* The generator folder keeps the HMG identity (it's HMG's internal tool).
+       V12.2 SECURITY FIX: js/config.js must NEVER ship with real owner
+       credentials inside a client ZIP. The template config carries HMG's
+       own HMG_OWNER block; strip it to blanks before packing. */
+    if (name === 'js/config.js') {
+      content = content.replace(
+        /window\.HMG_OWNER\s*=\s*\{[\s\S]*?\};/,
+        'window.HMG_OWNER = { email: "", password: "", name: "" }; /* set your own owner account */'
+      );
+    }
     return content;
   },
 
@@ -433,6 +466,29 @@ window.CD_CONFIG = {
   developer: ${JSON.stringify(cfg.developer)},
   version: ${JSON.stringify(cfg.version)}
 };
+
+/* Engine-parity brand block (V12.2): portal-bridge.js, enhancements.js and
+   teach-toolbar-fix.js read CLASSDECK.BRAND. Generated client decks are
+   standalone (no parent portal), stated explicitly so no module ever
+   bypasses the deck's own login. */
+window.CLASSDECK = window.CLASSDECK || {};
+window.CLASSDECK.BRAND = {
+  productName: ${JSON.stringify(cfg.brandName)},
+  shortName: ${JSON.stringify(cfg.shortName)},
+  studioName: ${JSON.stringify(cfg.brandName)},
+  tagline: ${JSON.stringify(cfg.tagline)},
+  email: ${JSON.stringify(cfg.email)},
+  siteUrl: ${JSON.stringify(cfg.website)},
+  logoUrl: 'assets/brand-logo.' + ${JSON.stringify(cfg.logoExt)},
+  primary: ${JSON.stringify(cfg.primaryColor)},
+  accent: ${JSON.stringify(cfg.accentColor)},
+  standalone: true,
+  parentPortal: '',
+  requirePortalSession: false,
+  studentJoinFree: true
+};
+window.APP_NAME = window.CLASSDECK.BRAND.productName;
+window.SCHOOL_NAME = window.CLASSDECK.BRAND.studioName;
 
 /* ⚠️ IMPORTANT — client deployments must NOT inherit HMG founder credentials.
    Clearing HMG_OWNER disables the founder "never-expires" account on this

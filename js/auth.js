@@ -43,14 +43,16 @@ const AUTH_SECRET = (() => {
 
 /* ============================================================
    HMG OWNER (FOUNDER) ACCOUNT — never expires, always unlocked.
-   The HMG ACADEMY CLASS DECK belongs to its founder and must not
-   be subject to the 3-day trial or license expiry. This account
-   is treated as the platform owner with lifetime access.
+   The deck's owner account is subject to neither the 3-day trial
+   nor license expiry.
    ------------------------------------------------------------
-   • Default email: buildingmyictcareer@gmail.com
-   • Default password: Walex@28120215
-   • You can override BOTH in js/config.js (so you can set it in
-     your GitHub repo) using the HMG_OWNER object:
+   V12.2 SECURITY FIX: the owner credentials are read ONLY from
+   js/config.js (window.HMG_OWNER). There is NO hardcoded fallback
+   anymore. Previous builds fell back to the HMG founder's real
+   email/password whenever HMG_OWNER was missing OR blank — which
+   meant every generated CLIENT deck (whose config intentionally
+   blanks HMG_OWNER) silently accepted the founder's credentials.
+   Now: blank/missing HMG_OWNER simply disables the owner account.
        window.HMG_OWNER = {
          email: "your-email@example.com",
          password: "your-password",
@@ -58,17 +60,21 @@ const AUTH_SECRET = (() => {
        };
    ============================================================ */
 const HMG_OWNER_EMAIL = (window.HMG_OWNER && window.HMG_OWNER.email)
-  ? String(window.HMG_OWNER.email).toLowerCase()
-  : "buildingmyictcareer@gmail.com";
+  ? String(window.HMG_OWNER.email).trim().toLowerCase()
+  : "";
 const HMG_OWNER_PASSWORD = (window.HMG_OWNER && window.HMG_OWNER.password)
   ? String(window.HMG_OWNER.password)
-  : "Walex@28120215";
+  : "";
 const HMG_OWNER_NAME = (window.HMG_OWNER && window.HMG_OWNER.name)
   ? String(window.HMG_OWNER.name)
-  : "Adewale Samson Adeagbo";
+  : "Deck Owner";
 const HMG_OWNER_TITLE = "Founder · HMG ACADEMY · HMG Concepts Ecosystem — Lifetime Access";
 
 function isOwnerEmail(email) {
+  /* An empty configured email must never match anything —
+     String("") === String("") would otherwise make EVERY blank
+     input an owner match — so guard explicitly. */
+  if (!HMG_OWNER_EMAIL) return false;
   return String(email || "").trim().toLowerCase() === HMG_OWNER_EMAIL;
 }
 const TRIAL_DAYS = 3;
@@ -136,7 +142,7 @@ async function signupTeacher() {
   if (pw !== pw2) return err("Passwords do not match.");
   const email = emailRaw.toLowerCase();
   /* HMG Founder: lifetime, never expires. */
-  const isOwner = isOwnerEmail(email) && pw === HMG_OWNER_PASSWORD;
+  const isOwner = isOwnerEmail(email) && !!HMG_OWNER_PASSWORD && pw === HMG_OWNER_PASSWORD;
   const salt = randomCode(10);
   const hash = await pbkdf2Hex(pw, salt);                       /* v7: key-stretched */
   const acc = { name, email, phone, school, salt, hash, created: Date.now(), kdf: 2, dev: deviceId(), owner: !!isOwner };
@@ -165,7 +171,7 @@ async function loginTeacher() {
      stored password hash matches the configured owner password — so users who signed
      up before this update instantly get lifetime access without re-creating the account. */
   let hash;
-  if (isOwnerEmail(acc.email) && pw === HMG_OWNER_PASSWORD) {
+  if (isOwnerEmail(acc.email) && !!HMG_OWNER_PASSWORD && pw === HMG_OWNER_PASSWORD) {
     hash = await pbkdf2Hex(pw, acc.salt);            // verify against stored hash
     if (hash === acc.hash && !acc.owner) {
       acc.owner = true;                              // upgrade to lifetime
@@ -174,7 +180,7 @@ async function loginTeacher() {
     }
   } else {
     hash = acc.owner
-      ? (pw === HMG_OWNER_PASSWORD ? acc.hash : "invalid")
+      ? ((HMG_OWNER_PASSWORD && pw === HMG_OWNER_PASSWORD) ? acc.hash : "invalid")
       : (acc.kdf === 2 ? await pbkdf2Hex(pw, acc.salt) : await sha256Hex(acc.salt + "|" + pw + "|" + AUTH_SECRET));
   }
   if (hash !== acc.hash) { noteFailedLogin(); $("#liStatus").textContent = "Incorrect password."; return; }

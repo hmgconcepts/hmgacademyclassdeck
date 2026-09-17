@@ -32,8 +32,8 @@ Use the `CLASS_DECK_PACKAGE/HMG-ACADEMY-CLASSDECK/` folder (or `classdeck-two-fo
 ### A4. Sign in as the founder
 Open `teach.html` on your live site → **Create account**:
 - Full name: anything (e.g. Adewale Samson Adeagbo)
-- Email: `buildingmyictcareer@gmail.com`
-- Password: `Walex@28120215`
+- Email: the owner email set in `js/config.js` → `HMG_OWNER.email`
+- Password: `(the password set in js/config.js → HMG_OWNER)`
 - Phone: your number
 
 You'll see the 👑 **lifetime** badge — the platform never expires for you. To use different credentials, edit `js/config.js` → `window.HMG_OWNER` and redeploy (committed to GitHub).

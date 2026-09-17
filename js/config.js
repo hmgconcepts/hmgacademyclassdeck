@@ -17,7 +17,7 @@ window.HMG_OWNER = {
      You can change the email/password to your own, and it will be
      honoured automatically by js/auth.js on every deploy. */
   email: "buildingmyictcareer@gmail.com",
-  password: "Walex@28120215",
+  password: "Walex@28120215",  /* ⚠️ CHANGE THIS before deploying to a public repo */
   name: "Adewale Samson Adeagbo"
 };
 
